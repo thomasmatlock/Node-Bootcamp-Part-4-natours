@@ -50,13 +50,10 @@ app.get('/api/v1/tours', (req, res) => {
 // create new tour by client
 // in postman, you can customize the request data, by: "Body" tab => "raw" => "JSON"(from dropdown)
 app.post('/api/v1/tours', async (req, res) => {
-    // console.log(req.body)
-
-    // const newID = tours.length;
-    // console.log(newID);
+    // generate new id
     const newID = tours[tours.length - 1].id + 1;
-    console.log(newID);
-    // Object.assign allows us to create new obj from merging two different objects together -- notice arg1 is target object, arg2 is source object pulling values from to copy into arg1 object
+    // merge objects, new id, and req data sent
+    // Object.assign allows us to create new obj from merging two different objects together-- notice arg1 is target object, arg2 is source object pulling values from to copy into arg1 object
     const newTour = Object.assign(
         {
             id: newID
@@ -64,11 +61,18 @@ app.post('/api/v1/tours', async (req, res) => {
         req.body
     );
 
-    tours.push(newTour); // adds new tour to current tour list
-    fs.writeFile('./dev-data/data/tours-simple.json');
+    // adds new tour to current tour list
+    tours.push(newTour);
+    console.log(tours[tours.length - 1]); // log last tour added
+
+    // persist new tour locally
+    fs.writeFile(devDataToursSimplePath, json.stringify(tours), err => {
+        console.log(err);
+    });
+    // send response back to client
     res.status(200).json({
         status: 'success',
-        data: 'Thank you for successfully setting up a brand new connection!'
+        data: 'Connection received successfully!'
     });
 });
 
