@@ -27,17 +27,16 @@ const port = 3000; //
 // JSON.parse will auto convert an array of JS objects
 const devDataToursSimplePath = `${__dirname}/dev-data/data/tours-simple.json`;
 const tours = JSON.parse(
-    fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
+    fs.readFileSync(devDataToursSimplePath)
 );
-const randNum = Math.floor(Math.random() * tours.length);
-console.log(tours[randNum].name);
+
 // get tour list by client
 app.get('/api/v1/tours', (req, res) => {
     // send all tours
     // usually send status and data, which is the "envelope" which holds our data
     res.status(200).json({
         status: 'success',
-        results: `${tours.length}`, // WOW SO HELPFUL. Shows count of results returned to user
+        results: `${tours.length - 1}`, // WOW SO HELPFUL. Shows count of results returned to user
         // inside data, the property(ies) should match the API endpoint, ie, tours = tours
         data: {
             // in ES6 we don't need to specify the key and value if they have the same name.
@@ -49,13 +48,12 @@ app.get('/api/v1/tours', (req, res) => {
 
 // create new tour by client
 // in postman, you can customize the request data, by: "Body" tab => "raw" => "JSON"(from dropdown)
-app.post('/api/v1/tours', async (req, res) => {
+app.post('/api/v1/tours', (req, res) => {
     // generate new id
     const newID = tours[tours.length - 1].id + 1;
     // merge objects, new id, and req data sent
     // Object.assign allows us to create new obj from merging two different objects together-- notice arg1 is target object, arg2 is source object pulling values from to copy into arg1 object
-    const newTour = Object.assign(
-        {
+    const newTour = Object.assign({
             id: newID
         },
         req.body
@@ -65,14 +63,18 @@ app.post('/api/v1/tours', async (req, res) => {
     tours.push(newTour);
     console.log(tours[tours.length - 1]); // log last tour added
 
-    // persist new tour locally
-    fs.writeFile(devDataToursSimplePath, json.stringify(tours), err => {
-        console.log(err);
-    });
-    // send response back to client
-    res.status(200).json({
-        status: 'success',
-        data: 'Connection received successfully!'
+    // persist new user-added tour locally
+    // JSON stringify to 
+    // callbacks are basically functions that run when the method called is complete
+    fs.writeFile(devDataToursSimplePath, JSON.stringify(tours), err => {
+        // send response, newly created object back to client
+        // 201 status code is 'created' successfully
+        res.status(201).json({
+            status: 'success',
+            data: {
+                data: newTour
+            }
+        })
     });
 });
 
