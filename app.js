@@ -49,8 +49,7 @@ const createTour = (req, res) => {
     const newID = tours[tours.length - 1].id + 1;
     // merge objects, new id, and req data sent
     // Object.assign allows us to create new obj from merging two different objects together-- notice arg1 is target object, arg2 is source object pulling values from to copy into arg1 object
-    const newTour = Object.assign(
-        {
+    const newTour = Object.assign({
             id: newID
         },
         req.body
@@ -137,6 +136,7 @@ app.listen(port, (req, res) => {
 // define variable using a colon
 // however, you may be missing one or more variables, then make those optional with a '?' after it ie: '/api/v1/tours/:id/:name?/:type?'
 // in postman, you can customize the request data, by: "Body" tab => "raw" => "JSON"(from dropdown)
-// PUT expects the entire updated obj, whereas PATCH expects only the properties that will be updated on the object
+// PUT expects the entire updated obj
+// PATCH expects only the properties that will be updated on the object, Jonas likes it better, same here
 // just like POST,  you need to include body content in raw JSON
-// app.route only works for methods that share same root, ie no params or w/e
+// app.route chaining only works for methods that share same root, ie no params or w/e
