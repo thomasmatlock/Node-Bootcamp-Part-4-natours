@@ -1,9 +1,27 @@
+// https://expressjs.com/en/4x/api.html to check out all methods available for res/req etc
+// https://expressjs.com/en/resources/middleware.html for all middlewares you can use and that express recommends
 const fs = require('fs');
 const express = require('express');
+const morgan = require('morgan');
 
+// MIDDLEWARE
 const app = express(); // calling express adds a bunch of methods to our variable we save it to
+// we use app.use to use middleware, aka add middleware to our middleware stack
+// calling that express.json function adds it to our middleware stack
+// we can create our own middleware stack
+// how to define a middleware, pass res/req objects and the next() method as args to app.use, and express knows we are defining a middleware
+// we can call next whatever we want, but arg3 is accepts as the next method
+app.use(morgan('dev')); // pass morgan predefined string (6 options or so) to define how we want our req object to look when its console logged
 app.use(express.json()); // express.json is middleware. middleware modifies or enhances data, usually incoming requests // middleware stands in middle between req and response
+app.use((req, res, next) => {
+    // console.log(`Hello from the middleware`);
+    req.requestTime = new Date().toISOString(); // toISOString converts datetime to nice readable string
+    // we need to call next method, or else express will be stuck here forever
+    next();
+});
 
+
+// ROUTE HANDLERS
 const devDataToursSimplePath = `${__dirname}/dev-data/data/tours-simple.json`;
 const tours = JSON.parse(fs.readFileSync(devDataToursSimplePath)); // JSON.parse will auto convert an array of JS objects
 
@@ -12,6 +30,7 @@ const getAllTours = (req, res) => {
     // usually send status and data, which is the "envelope" which holds our data
     res.status(200).json({
         status: 'success',
+        requestedAt: req.requestTime,
         results: `${tours.length - 1}`, // WOW SO HELPFUL. Shows count of results returned to user
         // inside data, the property(ies) should match the API endpoint, ie, tours = tours
         data: {
@@ -109,6 +128,7 @@ const deleteTour = (req, res) => {
     });
 };
 
+// ROUTES
 // app.get('/api/v1/tours', getAllTours);
 // app.post('/api/v1/tours', createTour);
 // app.get('/api/v1/tours/:id', getTour);
@@ -124,7 +144,7 @@ app.route('/api/v1/tours/:id')
     .patch(updateTour)
     .delete(deleteTour);
 
-// turn server on
+// START SERVER
 const port = 3000;
 app.listen(port, (req, res) => {
     console.log(`App running on port ${port}`);
@@ -140,3 +160,4 @@ app.listen(port, (req, res) => {
 // PATCH expects only the properties that will be updated on the object, Jonas likes it better, same here
 // just like POST,  you need to include body content in raw JSON
 // app.route chaining only works for methods that share same root, ie no params or w/e
+// routes are also middleware, they only turn on in specified cases, URL matches arg1 etc
