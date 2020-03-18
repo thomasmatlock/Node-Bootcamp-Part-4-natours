@@ -15,16 +15,18 @@ app.use((req, res, next) => {
     next();
 });
 
-
 // MOUNTED ROUTERS
 app.use('/api/v1/tours', tourRouter); // we want arg2 to handle everything sent to arg1, the endpoint. args: endpoint, router to handle it
 app.use('/api/v1/users', userRouter); // we want arg2 to handle everything sent to arg1, the endpoint. args: endpoint, router to handle it
 
-// START SERVER
-const port = 3000;
-app.listen(port, (req, res) => {
-    // console.log(`App running on port ${port}`);
-});
+module.exports = app; // export to server.js for use
+
+
+//  FLOW:
+// request enter via app.js, then gets passed to one of the 2 routers we mounted to handle them
+// the routers then run the controllers attached to them
+// app.js => mounted routers => router file => controller file
+// its good practice to separate express and server.js file
 
 // we need this, try commenting it out, it changes client req body json to a req object, without it, its undefined
 // app.use allows us to pass it middleware to use to enhance experience, streamline request data, etc, augment http data handling, serverside, for example
