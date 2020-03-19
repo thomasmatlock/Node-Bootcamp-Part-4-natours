@@ -6,10 +6,12 @@ const userRouter = require('./routes/userRoutes');
 // MIDDLEWARE
 const app = express(); // calling express adds a bunch of methods to our variable we save it to
 
-app.use(morgan('dev')); // pass morgan predefined string (6 options or so) to define how we want our req object to look when its console logged
+if (process.env.NODE_ENV === 'development') {
+    app.use(morgan('dev')); // pass morgan predefined string (6 options or so) to define how we want our req object to look when its console logged
+}
 app.use(express.json()); // express.json is middleware. middleware modifies or enhances data, usually incoming requests // middleware stands in middle between req and response
-
-
+// these are available in browser, as long as full path is there/ partial paths like /img dont work, cuz it thinks its a route
+app.use(express.static(`${__dirname}/public`)); // this makes available static files, then the folder they are located in
 
 app.use((req, res, next) => {
     // console.log(`Hello from the middleware`);
@@ -23,7 +25,6 @@ app.use('/api/v1/tours', tourRouter); // we want arg2 to handle everything sent 
 app.use('/api/v1/users', userRouter); // we want arg2 to handle everything sent to arg1, the endpoint. args: endpoint, router to handle it
 
 module.exports = app; // export to server.js for use
-
 
 //  FLOW:
 // request enter via app.js, then gets passed to one of the 2 routers we mounted to handle them
@@ -50,7 +51,7 @@ module.exports = app; // export to server.js for use
 // we can create our own middleware stack
 // how to define a middleware, pass res/req objects and the next() method as args to app.use, and express knows we are defining a middleware
 // we can call next whatever we want, but arg3 is accepts as the next method
-// console.log(`${__dirname}/../dev-data`); // you get cwd, go up 1 folder, and select what you want. use consolelog to print some these, its easy 
+// console.log(`${__dirname}/../dev-data`); // you get cwd, go up 1 folder, and select what you want. use consolelog to print some these, its easy
 
 // MOUNTING A ROUTER (using a new router as middleware on an existing route to handle it, then using prexisting routing to handle sub routing)
 // all routers are running off of the 'app' object. to split routing into multiple files for cleaner code, we need to create a router for each of the resources
@@ -59,3 +60,6 @@ module.exports = app; // export to server.js for use
 // this arg2 router, in turn, has its own routes
 // basically when a req comes in, if it matches arg1, the endpoint, it will run the arg2, the router in charge of handling w/e comes to that endpoint
 // now we split the files, basically we created small apps, imported them, and mounted them on the ENDPOINTS (api/v1/tours|users) to handle requests to those endpoints
+
+// 65, env variables
+// most important environments are dev env, and production env
