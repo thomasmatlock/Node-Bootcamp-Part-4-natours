@@ -8,6 +8,9 @@ const app = express(); // calling express adds a bunch of methods to our variabl
 
 app.use(morgan('dev')); // pass morgan predefined string (6 options or so) to define how we want our req object to look when its console logged
 app.use(express.json()); // express.json is middleware. middleware modifies or enhances data, usually incoming requests // middleware stands in middle between req and response
+
+
+
 app.use((req, res, next) => {
     // console.log(`Hello from the middleware`);
     req.requestTime = new Date().toISOString(); // toISOString converts datetime to nice readable string

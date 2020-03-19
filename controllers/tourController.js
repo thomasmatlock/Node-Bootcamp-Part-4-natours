@@ -3,6 +3,37 @@ const fs = require('fs');
 const devDataToursSimplePath = `${__dirname}/../dev-data/data/tours-simple.json`;
 const tours = JSON.parse(fs.readFileSync(devDataToursSimplePath)); // JSON.parse will auto convert an array of JS objects
 
+// middleware function to eliminate checking in 3 functions if id is valid
+// i like this its very DRY principle. none of the following chained routes need to worry about validation at all -- 
+// as opposed to writing a non chained separate function, then calling it in each of the chained routes
+exports.checkID = (req, res, next, val) => {
+    console.log(`Tour id is ${val}`);
+
+    if (req.params.id * 1 >= tours.length) {
+        // remember, using return will make sure the next() is never calledz
+        return res.status(404).json({
+            status: 'fail',
+            message: 'Invalid ID'
+        });
+    }
+    next();
+}
+
+exports.checkBody = (req, res, next) => {
+    // console.log(val);
+
+    // console.log(`The body.name is ${req.body.name}`);
+    // console.log(`The body.price is ${req.body.price}`);
+
+    if (!req.body.name || !req.body.price) {
+        return res.status(400).json({
+            status: 'fail',
+            message: 'Invalid name or price'
+        })
+    }
+    next();
+}
+
 // multiple exports, attach them to exports module using export.X instead of const then export
 exports.getAllTours = (req, res) => {
     // send all tours
@@ -23,17 +54,7 @@ exports.getTour = (req, res) => {
     // console.log(req.params); // all url variables are stored here in params object
     const id = req.params.id * 1; // JS weirdly converts strings that look like numbers to actual numbers
     const tour = tours.find(el => el.id === id); // find method stores an array of els that match existing condition aka it loops through tours element ids to match one to the param id
-    console.log(id);
-
-    // if (id >= tours.length) {
-
-    if (!tour) {
-        console.log(`No good, tour ${id} is undefined`);
-        return res.status(404).json({
-            status: 'fail',
-            message: 'Invalid ID'
-        });
-    }
+    // console.log(id);
 
     res.status(200).json({
         status: 'success',
@@ -74,14 +95,7 @@ exports.createTour = (req, res) => {
 exports.updateTour = (req, res) => {
     console.log(req.params);
     const id = req.params.id;
-    // if (id >= tours.length) {
-    if (req.params.id * 1 >= tours.length) {
-        console.log(`No good, tour ${id} is undefined`);
-        return res.status(404).json({
-            status: 'fail',
-            message: 'Invalid ID'
-        });
-    }
+
     res.status(200).json({
         status: 'success',
         data: {
@@ -92,14 +106,7 @@ exports.updateTour = (req, res) => {
 exports.deleteTour = (req, res) => {
     console.log(req.params);
     const id = req.params.id;
-    // if (id >= tours.length) {
-    if (req.params.id * 1 >= tours.length) {
-        console.log(`No good, tour ${id} is undefined`);
-        return res.status(404).json({
-            status: 'fail',
-            message: 'Invalid ID'
-        });
-    }
+
     // notice statuscode for delete is 204, which means 'no content', also we send null as res
     res.status(204).json({
         status: 'success',
