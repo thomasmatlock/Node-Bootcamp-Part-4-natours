@@ -1,5 +1,5 @@
 const express = require('express');
-const tourController = require('./../controllers/tourController');
+const tourController = require('../controllers/tourController');
 
 // ROUTERS
 const router = express.Router(); // creates new router saved to var. then replace 'app.route' with 'router.route'
@@ -7,7 +7,7 @@ const router = express.Router(); // creates new router saved to var. then replac
 // param middleware is middleware that only runs for certain params
 // right now, the only param is :id, and we can write middleware that runs for that param
 // once again, all middleware has access to the req/res/next function, as well as arg4 which is the value of the param
-router.param('id', tourController.checkID)
+router.param('id', tourController.checkID);
 
 router
     .route('/')
