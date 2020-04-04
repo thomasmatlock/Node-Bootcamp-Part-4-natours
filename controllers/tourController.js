@@ -1,5 +1,6 @@
 const Tour = require('../models/tourModel');
 
+// https://mongoosejs.com/docs/queries.html for all query methods
 // multiple exports, attach them to exports module using exports.X instead of const then module.exports
 exports.getAllTours = async (req, res) => {
     // send all tours
@@ -67,30 +68,44 @@ exports.createTour = async (req, res) => {
         //400 code = Bad Request
         res.status(400).json({
             status: 'error',
-            message: `${err.errmsg}`
+            message: err.errmsg
         });
     }
 };
-exports.updateTour = (req, res) => {
-    console.log(req.params);
-    const id = req.params.id;
-
-    res.status(200).json({
-        status: 'success',
-        data: {
-            tour: 'Updated tour here...'
-        }
-    });
+exports.updateTour = async (req, res) => {
+    try {
+        // findByIdAndUpdate: arg1 = id, arg2 = req.body, arg3 = options
+        const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+            // this makes sure it sends back the updated new doc rather than original doc
+            // also runValidators checks to ensure the new doc matches our schema
+            new: true,
+            runValidators: true
+        });
+        res.status(200).json({
+            status: 'success',
+            data: {
+                tour
+            }
+        });
+    } catch (err) {
+        res.status(400).json({
+            status: 'fail',
+            message: err.errmsg
+        });
+    }
 };
-exports.deleteTour = (req, res) => {
-    // console.log(req.params);
-    // const id = req.params.id;
-
-    // notice statuscode for delete is 204, which means 'no content', also we send null as res
-    res.status(204).json({
-        status: 'success',
-        data: null
-    });
+exports.deleteTour = async (req, res) => {
+    try {
+        await Tour.findByIdAndDelete(req.params.id); // notice here we dont save the result to a variable, because we dont send anything to client
+        res.status(204).json({
+            status: 'success'
+        });
+    } catch (err) {
+        res.status(400).json({
+            status: 'fail',
+            message: err.errmsg
+        });
+    }
 };
 
 // const devDataToursSimplePath = `${__dirname}/../dev-data/data/tours-simple.json`;
