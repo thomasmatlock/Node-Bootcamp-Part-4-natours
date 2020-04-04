@@ -13,12 +13,13 @@ const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSW
 // mongoose.connect returns a promise, so we can use .then(), then() gets access to the connection obj
 // we name it 'con' for connection, and its the results of the returned promise
 // arg1, db connection string; arg2, obj that is some options to deal w deprecation warnings
-// dont worry about the 3 arg2 properties right now. make them exactly the same in my own projects
+// dont worry about the 4 arg2 properties right now. make them exactly the same in my own projects
 mongoose
     .connect(DB, {
         useNewUrlParser: true,
         useCreateIndex: true,
-        useFindAndModify: false
+        useFindAndModify: false,
+        useUnifiedTopology: true
     })
     .then(() => console.log(`DB connection successful!`));
 // console.log(app.get('env')); // shows us whether in dev or production env. default is dev
@@ -48,13 +49,29 @@ const tourSchema = new mongoose.Schema({
 });
 
 // MONGOOSE MODEL
+// create an instance of the Tour model
 // mongoose convention to always use uppercase on models
 // arg1 = name of model, arg2 = schema of model
 const Tour = mongoose.model('Tour', tourSchema);
+// create new document out of our tour model
+const testTour = new Tour({
+    name: 'The Park Camper',
+    rating: 4.7,
+    price: 497
+});
+// save the instance to the document database
+// .save() returns a promise that we then consume
+// the returned promise is the final document in the database, and we we will name it 'doc'
+testTour
+    .save()
+    .then(doc => {
+        console.log(doc);
+    })
+    .catch(err => console.log(`ERROR, doc failed to save to cloud\n`, err.errmsg));
 
 // START SERVER
 const port = process.env.PORT || 3000;
 
 app.listen(port, (req, res) => {
-    // console.log(`App running on port ${port}`);
+    console.log(`App running on port ${port}`);
 });
