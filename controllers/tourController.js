@@ -1,96 +1,75 @@
-const fs = require('fs');
+const Tour = require('../models/tourModel');
 
-const devDataToursSimplePath = `${__dirname}/../dev-data/data/tours-simple.json`;
-const tours = JSON.parse(fs.readFileSync(devDataToursSimplePath)); // JSON.parse will auto convert an array of JS objects
-
-// middleware function to eliminate checking in 3 functions if id is valid
-// i like this its very DRY principle. none of the following chained routes need to worry about validation at all -- 
-// as opposed to writing a non chained separate function, then calling it in each of the chained routes
-exports.checkID = (req, res, next, val) => {
-    console.log(`Tour id is ${val}`);
-
-    if (req.params.id * 1 >= tours.length) {
-        // remember, using return will make sure the next() is never calledz
-        return res.status(404).json({
-            status: 'fail',
-            message: 'Invalid ID'
-        });
-    }
-    next();
-}
-
-exports.checkBody = (req, res, next) => {
-    // console.log(val);
-
-    // console.log(`The body.name is ${req.body.name}`);
-    // console.log(`The body.price is ${req.body.price}`);
-
-    if (!req.body.name || !req.body.price) {
-        return res.status(400).json({
-            status: 'fail',
-            message: 'Invalid name or price'
-        })
-    }
-    next();
-}
-
-// multiple exports, attach them to exports module using export.X instead of const then export
-exports.getAllTours = (req, res) => {
+// multiple exports, attach them to exports module using exports.X instead of const then module.exports
+exports.getAllTours = async (req, res) => {
     // send all tours
     // usually send status and data, which is the "envelope" which holds our data
-    res.status(200).json({
-        status: 'success',
-        requestedAt: req.requestTime,
-        results: `${tours.length - 1}`, // WOW SO HELPFUL. Shows count of results returned to user
-        // inside data, the property(ies) should match the API endpoint, ie, tours = tours
-        data: {
-            // in ES6 we don't need to specify the key and value if they have the same name.
-            // if the value was different, we would still call the property the same as API endpoint
-            tours
-        }
-    });
+    try {
+        // get all docs uses exact same method as using mongo shell or compass > find() method also converts it to a obj
+        const tours = await Tour.find();
+        res.status(200).json({
+            status: 'success',
+            results: tours.length,
+            data: {
+                tours
+            }
+            // results: `${tours.length - 1}`, // WOW SO HELPFUL. Shows count of results returned to user
+            // // inside data, the property(ies) should match the API endpoint, ie, tours = tours
+            // data: {
+            //     // in ES6 we don't need to specify the key and value if they have the same name.
+            //     // if the value was different, we would still call the property the same as API endpoint
+            //     tours
+            // }
+        });
+    } catch (err) {
+        res.status(404).json({
+            status: err.errmsg,
+            message: 'fail'
+        });
+    }
 };
-exports.getTour = (req, res) => {
-    // console.log(req.params); // all url variables are stored here in params object
-    const id = req.params.id * 1; // JS weirdly converts strings that look like numbers to actual numbers
-    const tour = tours.find(el => el.id === id); // find method stores an array of els that match existing condition aka it loops through tours element ids to match one to the param id
-    // console.log(id);
-
-    res.status(200).json({
-        status: 'success',
-        data: {
-            tour: tour
-        }
-    });
+exports.getTour = async (req, res) => {
+    try {
+        // all url variables are stored here in params object
+        //mongoose skips mongo's "findOne" to find 1 doc, instead it uses findById, its same as === Tour.findOne({id: req.params.id})
+        const tour = await Tour.findById(req.params.id);
+        res.status(200).json({
+            status: 'success',
+            data: {
+                tour
+            }
+        });
+    } catch (err) {
+        res.status(404).json({
+            status: err.errmsg,
+            message: 'fail'
+        });
+    }
 };
-exports.createTour = (req, res) => {
-    // generate new id
-    const newID = tours[tours.length - 1].id + 1;
-    // merge objects, new id, and req data sent
-    // Object.assign allows us to create new obj from merging two different objects together-- notice arg1 is target object, arg2 is source object pulling values from to copy into arg1 object
-    const newTour = Object.assign({
-            id: newID
-        },
-        req.body
-    );
+// notice we make all the Atlas functions async/await, and give them try/catch
+exports.createTour = async (req, res) => {
+    // old way to create tour document: create document, then call the method
+    // const newTour = new Tour({});
+    // newTour.save();
 
-    // adds new tour to current tour list
-    tours.push(newTour);
-    console.log(tours[tours.length - 1]); // log last tour added
-
-    // persist new user-added tour locally
-    // JSON stringify to
-    // callbacks are basically functions that run when the method called is complete
-    fs.writeFile(devDataToursSimplePath, JSON.stringify(tours), err => {
-        // send response, newly created object back to client
-        // 201 status code is 'created' successfully
+    try {
+        //new easier way to create tour document: we basically just call the create method directly on the tour > this returns a promise we await
+        // explanation: use Tour model directly > call create method on it > pass it the request body sent by POST request > save it to a variable
+        const newTour = await Tour.create(req.body);
         res.status(201).json({
             status: 'success',
             data: {
-                data: newTour
+                tour: newTour
             }
         });
-    });
+    } catch (err) {
+        // console.log(err);
+        //400 code = Bad Request
+        res.status(400).json({
+            status: 'error',
+            message: `${err.errmsg}`
+        });
+    }
 };
 exports.updateTour = (req, res) => {
     console.log(req.params);
@@ -104,8 +83,8 @@ exports.updateTour = (req, res) => {
     });
 };
 exports.deleteTour = (req, res) => {
-    console.log(req.params);
-    const id = req.params.id;
+    // console.log(req.params);
+    // const id = req.params.id;
 
     // notice statuscode for delete is 204, which means 'no content', also we send null as res
     res.status(204).json({
@@ -113,3 +92,76 @@ exports.deleteTour = (req, res) => {
         data: null
     });
 };
+
+// const devDataToursSimplePath = `${__dirname}/../dev-data/data/tours-simple.json`;
+// const tours = JSON.parse(fs.readFileSync(devDataToursSimplePath)); // JSON.parse will auto convert an array of JS objects
+
+// middleware function to eliminate checking in 3 functions if id is valid
+// i like this its very DRY principle. none of the following chained routes need to worry about validation at all --
+// as opposed to writing a non chained separate function, then calling it in each of the chained routes
+// exports.checkID = (req, res, next, val) => {
+//     console.log(`Tour id is ${val}`);
+
+//     if (req.params.id * 1 >= tours.length) {
+//         // remember, using return will make sure the next() is never calledz
+//         return res.status(404).json({
+//             status: 'fail',
+//             message: 'Invalid ID'
+//         });
+//     }
+//     next();
+// }
+
+// exports.checkBody = (req, res, next) => {
+//     // console.log(val);
+
+//     // console.log(`The body.name is ${req.body.name}`);
+//     // console.log(`The body.price is ${req.body.price}`);
+
+//     if (!req.body.name || !req.body.price) {
+//         return res.status(400).json({
+//             status: 'fail',
+//             message: 'Invalid name or price'
+//         })
+//     }
+//     next();
+// }
+
+// exports.createTour = (req, res) => {
+//     res.status(201).json({
+//         status: 'success',
+//         // data: {
+//         //     data: newTour
+//         // }
+//     });
+//     // generate new id
+//     const newID = tours[tours.length - 1].id + 1;
+//     // merge objects, new id, and req data sent
+//     // Object.assign allows us to create new obj from merging two different objects together-- notice arg1 is target object, arg2 is source object pulling values from to copy into arg1 object
+//     const newTour = Object.assign({
+//             id: newID
+//         },
+//         req.body
+//     );
+
+//     // adds new tour to current tour list
+//     tours.push(newTour);
+//     console.log(tours[tours.length - 1]); // log last tour added
+
+//     // persist new user-added tour locally
+//     // JSON stringify to
+//     // callbacks are basically functions that run when the method called is complete
+//     fs.writeFile(devDataToursSimplePath, JSON.stringify(tours), err => {
+//         // send response, newly created object back to client
+//         // 201 status code is 'created' successfully
+//         res.status(201).json({
+//             status: 'success',
+//             data: {
+//                 data: newTour
+//             }
+//         });
+//     });
+// };
+
+// const tour = tours.find(el => el.id === id); // find method stores an array of els that match existing condition aka it loops through tours element ids to match one to the param id
+// // console.log(id);
