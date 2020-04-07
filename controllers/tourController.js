@@ -4,28 +4,35 @@ const Tour = require('../models/tourModel');
 // multiple exports, attach them to exports module using exports.X instead of const then module.exports
 exports.getAllTours = async (req, res) => {
     try {
+        console.log(req.query);
+
         // BUILD QUERY
+        // 1) Filtering
         // here, we want a hard copy of all query key values pairs, and JS, all variables point to the original, so we destructure it off query with ...
         const queryObj = {
             ...req.query
         };
+
         const excludedFields = ['page', 'sort', 'limit', 'fields']; // this sets the list of queries we want to ignore
         excludedFields.forEach(el => delete queryObj[el]); // here we loop through excludedFields, each element we want removed from queryObj, delete it from our queryObj
 
         // send all tours
-        // usually send status and data, which is the "envelope" which holds our data
+        // 2) Advanced Filtering
+
+        let queryStr = JSON.stringify(queryObj);
+        queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`); // regex replacing exact match of any of these strings. g allows multiple replacements. also allows callback fn using the match it found
+        console.log(JSON.parse(queryStr));
+
         // get all docs uses exact same method as using mongo shell or compass > find() method also converts JSON of doc to a obj
-        // 2 ways to filter query strings, 1st, a filter object:
-        const query = await Tour.find(queryObj);
-        //2nd, using mongoose chaining where/equals, where/lte/lt/gte/gt
+        const query = Tour.find(JSON.parse(queryStr)); // Json.parse converts to obj, json.stringify converts to string
+        // EXECUTE QUERY
+        const tours = await query;
+
         // const query = await Tour.find()
         //     .where('duration')
         //     .equals(5)
         //     .where('difficulty')
         //     .equals('easy');
-
-        // EXECUTE QUERY
-        const tours = await query;
 
         // SEND RESPONSE
         res.status(200).json({
@@ -45,7 +52,7 @@ exports.getAllTours = async (req, res) => {
     } catch (err) {
         res.status(404).json({
             status: err.errmsg,
-            message: 'fail'
+            message: err
         });
     }
 };
