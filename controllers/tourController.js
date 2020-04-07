@@ -17,6 +17,8 @@ exports.getAllTours = async (req, res) => {
         // get all docs uses exact same method as using mongo shell or compass > find() method also converts JSON of doc to a obj
         // 2 ways to filter query strings, 1st, a filter object:
         const query = await Tour.find(queryObj);
+
+        // {query: }
         //2nd, using mongoose chaining where/equals, where/lte/lt/gte/gt
         // const query = await Tour.find()
         //     .where('duration')
