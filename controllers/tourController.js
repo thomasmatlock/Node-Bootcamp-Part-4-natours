@@ -3,11 +3,31 @@ const Tour = require('../models/tourModel');
 // https://mongoosejs.com/docs/queries.html for all query methods
 // multiple exports, attach them to exports module using exports.X instead of const then module.exports
 exports.getAllTours = async (req, res) => {
-    // send all tours
-    // usually send status and data, which is the "envelope" which holds our data
     try {
-        // get all docs uses exact same method as using mongo shell or compass > find() method also converts it to a obj
-        const tours = await Tour.find();
+        // BUILD QUERY
+        // here, we want a hard copy of all query key values pairs, and JS, all variables point to the original, so we destructure it off query with ...
+        const queryObj = {
+            ...req.query
+        };
+        const excludedFields = ['page', 'sort', 'limit', 'fields']; // this sets the list of queries we want to ignore
+        excludedFields.forEach(el => delete queryObj[el]); // here we loop through excludedFields, each element we want removed from queryObj, delete it from our queryObj
+
+        // send all tours
+        // usually send status and data, which is the "envelope" which holds our data
+        // get all docs uses exact same method as using mongo shell or compass > find() method also converts JSON of doc to a obj
+        // 2 ways to filter query strings, 1st, a filter object:
+        const query = await Tour.find(queryObj);
+        //2nd, using mongoose chaining where/equals, where/lte/lt/gte/gt
+        // const query = await Tour.find()
+        //     .where('duration')
+        //     .equals(5)
+        //     .where('difficulty')
+        //     .equals('easy');
+
+        // EXECUTE QUERY
+        const tours = await query;
+
+        // SEND RESPONSE
         res.status(200).json({
             status: 'success',
             results: tours.length,

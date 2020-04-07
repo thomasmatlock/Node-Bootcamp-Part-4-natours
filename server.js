@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv'); // npm package that handles our config.env file, useful to toggle between production and development
-const app = require('./app');
 
 // reads our config.env file and save them to nodejs env variable
 dotenv.config({
     path: './config.env'
 });
+const app = require('./app');
 
 
 // mongoose.connect returns a promise, so we can use .then(), then() gets access to the connection obj
