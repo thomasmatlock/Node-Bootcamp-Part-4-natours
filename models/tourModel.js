@@ -1,6 +1,5 @@
 const mongoose = require('mongoose'); // mongoose is npm package that is a middleware that allows our app to connect to our mongodb database
 
-
 // we create mongoose models out of mongoose schema: we use schema to describe value, define default fields and values, validate data, etc
 // pass in schema as an object
 // in the scheme obj, we can do it simply, or add options, like required=true, etc
@@ -8,7 +7,6 @@ const mongoose = require('mongoose'); // mongoose is npm package that is a middl
 // notice w single values we dont need need to encase it in an object
 // also, for string types, we can set trim to true, to trim of leading/trailing whitespace characters
 // MONGOOSE SCHEMA
-
 
 const tourSchema = new mongoose.Schema({
     name: {
@@ -53,8 +51,11 @@ const tourSchema = new mongoose.Schema({
     },
     imageCover: {
         type: String,
-        required: [true, 'A tour must have an image.']
-    }
+        required: [true, 'A tour must have a cover image.']
+    },
+    images: [String],
+    createdAt: { type: Date, default: Date.now() },
+    startDates: [Date]
 });
 
 // MONGOOSE MODEL
