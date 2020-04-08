@@ -63,4 +63,5 @@ class APIFeatures {
     }
 }
 
+// eslint-disable-next-line prettier/prettier
 module.exports = APIFeatures;
