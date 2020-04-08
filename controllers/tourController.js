@@ -1,9 +1,6 @@
 const Tour = require('../models/tourModel');
 const APIFeatures = require('../utils/apiFeatures');
 
-// https://mongoosejs.com/docs/queries.html for all query methods
-// multiple exports, attach them to exports module using exports.X instead of const then module.exports
-// this alias is middleware kind of to manipulate the request obj before moving on the next function, getAllTours: basically it prefills values in the req object
 exports.aliasTopTours = (req, res, next) => {
     // limit=5&sort=-ratingsAverage,price
     req.query.limit = '5';
@@ -116,6 +113,11 @@ exports.deleteTour = async (req, res) => {
 
 ////////////////////////////////////////////////////////////////
 // notice we make all the Atlas functions async/await, and give them try/catch
+
+////////////////////////////////////////////////////////////////
+// https://mongoosejs.com/docs/queries.html for all query methods
+// multiple exports, attach them to exports module using exports.X instead of const then module.exports
+// this alias is middleware kind of to manipulate the request obj before moving on the next function, getAllTours: basically it prefills values in the req object
 
 ////////////////////////////////////////////////////////////////
 // const devDataToursSimplePath = `${__dirname}/../dev-data/data/tours-simple.json`;
