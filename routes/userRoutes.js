@@ -14,4 +14,5 @@ router
     .patch(userController.updateUser)
     .delete(userController.deleteUser);
 
+// eslint-disable-next-line prettier/prettier
 module.exports = router;

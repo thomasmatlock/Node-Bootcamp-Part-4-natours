@@ -14,7 +14,6 @@ router
     .get(tourController.getAllTours)
     .post(tourController.createTour); // add param or conditional middleware before default controller
 
-
 router
     .route('/:id')
     .get(tourController.getTour)
