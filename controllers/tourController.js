@@ -12,7 +12,6 @@ exports.aliasTopTours = (req, res, next) => {
     next();
 };
 
-
 // notice we make all the Atlas functions async/await, and give them try/catch
 exports.getAllTours = async (req, res) => {
     try {

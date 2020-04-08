@@ -26,4 +26,4 @@ router
     .patch(tourController.updateTour)
     .delete(tourController.deleteTour);
 
-module.exports = router; // use module.exports when we only have 1 thing to export then
+module.exports = router; // use module.exports when we only have 1 thing to export
