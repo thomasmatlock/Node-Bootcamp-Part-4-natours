@@ -12,7 +12,6 @@ exports.aliasTopTours = (req, res, next) => {
     next();
 };
 
-// notice we make all the Atlas functions async/await, and give them try/catch
 exports.getAllTours = async (req, res) => {
     try {
         // EXECUTE QUERY > arg1: Tour.find() = query obj, arg2: req.query = queryString (URL)
@@ -116,6 +115,9 @@ exports.deleteTour = async (req, res) => {
 };
 
 ////////////////////////////////////////////////////////////////
+// notice we make all the Atlas functions async/await, and give them try/catch
+
+////////////////////////////////////////////////////////////////
 // const devDataToursSimplePath = `${__dirname}/../dev-data/data/tours-simple.json`;
 // const tours = JSON.parse(fs.readFileSync(devDataToursSimplePath)); // JSON.parse will auto convert an array of JS objects
 
@@ -188,7 +190,6 @@ exports.deleteTour = async (req, res) => {
 
 // const tour = tours.find(el => el.id === id); // find method stores an array of els that match existing condition aka it loops through tours element ids to match one to the param id
 // // console.log(id);
-////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////
 // results: `${tours.length - 1}`, // WOW SO HELPFUL. Shows count of results returned to user
@@ -198,7 +199,6 @@ exports.deleteTour = async (req, res) => {
 //     // if the value was different, we would still call the property the same as API endpoint
 //     tours
 // }
-////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////
 // // BUILD QUERY
@@ -260,4 +260,6 @@ exports.deleteTour = async (req, res) => {
 //             `There are only ${numTours}, you requested ${skip} tours.`
 //         );
 // }
+
+// eslint-disable-next-line prettier/prettier
 ////////////////////////////////////////////////////////////////
