@@ -14,8 +14,7 @@ app.use(express.static(`${__dirname}/public`)); // this makes available static f
 
 app.use((req, res, next) => {
     req.requestTime = new Date().toISOString(); // toISOString converts datetime to nice readable string
-    next(); // we need to call next method, or else express will be stuck here forever
-
+    next(); // we need to call next method, or else express will be stuck here forevergit push origin master
 });
 
 // MOUNTED ROUTERS
