@@ -13,10 +13,9 @@ app.use(express.json()); // express.json is middleware. middleware modifies or e
 app.use(express.static(`${__dirname}/public`)); // this makes available static files, then the folder they are located in
 
 app.use((req, res, next) => {
-    // console.log(`Hello from the middleware`);
     req.requestTime = new Date().toISOString(); // toISOString converts datetime to nice readable string
-    // we need to call next method, or else express will be stuck here forever
-    next();
+    next(); // we need to call next method, or else express will be stuck here forever
+
 });
 
 // MOUNTED ROUTERS
