@@ -1,9 +1,21 @@
 const Tour = require('../models/tourModel');
+const APIFeatures = require('../utils/apiFeatures');
 
 // https://mongoosejs.com/docs/queries.html for all query methods
 // multiple exports, attach them to exports module using exports.X instead of const then module.exports
+// this alias is middleware kind of to manipulate the request obj before moving on the next function, getAllTours: basically it prefills values in the req object
+exports.aliasTopTours = (req, res, next) => {
+    // limit=5&sort=-ratingsAverage,price
+    req.query.limit = '5';
+    req.query.sort = '-ratingsAverage,price';
+    req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
+    next();
+};
+
+// notice we make all the Atlas functions async/await, and give them try/catch
 exports.getAllTours = async (req, res) => {
     try {
+<<<<<<< HEAD
         // BUILD QUERY
         // here, we want a hard copy of all query key values pairs, and JS, all variables point to the original, so we destructure it off query with ...
         const queryObj = {
@@ -28,6 +40,14 @@ exports.getAllTours = async (req, res) => {
 
         // EXECUTE QUERY
         const tours = await query;
+=======
+        // EXECUTE QUERY > arg1: Tour.find() = query obj, arg2: req.query = queryString (URL)
+        const features = new APIFeatures(Tour.find(), req.query)
+            .filter()
+            .sort()
+            .paginate();
+        const tours = await features.query;
+>>>>>>> 2ac59f7fb0ff4a6681281a978bfc72b1fb551685
 
         // SEND RESPONSE
         res.status(200).json({
@@ -36,18 +56,11 @@ exports.getAllTours = async (req, res) => {
             data: {
                 tours
             }
-            // results: `${tours.length - 1}`, // WOW SO HELPFUL. Shows count of results returned to user
-            // // inside data, the property(ies) should match the API endpoint, ie, tours = tours
-            // data: {
-            //     // in ES6 we don't need to specify the key and value if they have the same name.
-            //     // if the value was different, we would still call the property the same as API endpoint
-            //     tours
-            // }
         });
     } catch (err) {
         res.status(404).json({
-            status: err.errmsg,
-            message: 'fail'
+            status: 'fail',
+            message: err.errmsg
         });
     }
 };
@@ -69,7 +82,6 @@ exports.getTour = async (req, res) => {
         });
     }
 };
-// notice we make all the Atlas functions async/await, and give them try/catch
 exports.createTour = async (req, res) => {
     // old way to create tour document: create document, then call the method
     // const newTour = new Tour({});
@@ -130,6 +142,7 @@ exports.deleteTour = async (req, res) => {
     }
 };
 
+////////////////////////////////////////////////////////////////
 // const devDataToursSimplePath = `${__dirname}/../dev-data/data/tours-simple.json`;
 // const tours = JSON.parse(fs.readFileSync(devDataToursSimplePath)); // JSON.parse will auto convert an array of JS objects
 
@@ -202,3 +215,76 @@ exports.deleteTour = async (req, res) => {
 
 // const tour = tours.find(el => el.id === id); // find method stores an array of els that match existing condition aka it loops through tours element ids to match one to the param id
 // // console.log(id);
+////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////
+// results: `${tours.length - 1}`, // WOW SO HELPFUL. Shows count of results returned to user
+// // inside data, the property(ies) should match the API endpoint, ie, tours = tours
+// data: {
+//     // in ES6 we don't need to specify the key and value if they have the same name.
+//     // if the value was different, we would still call the property the same as API endpoint
+//     tours
+// }
+////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////
+// // BUILD QUERY
+// // 1A) Filtering
+// // here, we want a hard copy of all query key values pairs, and JS, all variables point to the original, so we destructure it off query with ...
+// const queryObj = {
+//     ...req.query
+// };
+
+// const excludedFields = ['page', 'sort', 'limit', 'fields']; // this sets the list of queries we want to ignore
+// excludedFields.forEach(el => delete queryObj[el]); // here we loop through excludedFields, each element we want removed from queryObj, delete it from our queryObj
+
+// // send all tours
+// // 1B) Advanced Filtering
+
+// let queryStr = JSON.stringify(queryObj);
+// queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`); // regex replacing exact match of any of these strings. g allows multiple replacements. also allows callback fn using the match it found
+
+// // get all docs uses exact same method as using mongo shell or compass > find() method also converts JSON of doc to a obj
+// let query = Tour.find(JSON.parse(queryStr)); // Json.parse converts to obj, json.stringify converts to string
+
+// // 2) Sorting
+// if (req.query.sort) {
+//     // sort('price ratingsAverage')
+//     const sortBy = req.query.sort.split(',').join(' '); // splits sort query string by commas, then rejoins them with whitespace
+//     // console.log(sortBy);
+
+//     query = query.sort(sortBy); // saves version sorted by sort field value, in this case, 'price'
+// } else {
+//     query = query.sort('-createdAt'); // specifies default sort if user doesnt sort them
+// }
+
+// // 3) Field limiting
+// if (req.query.fields) {
+//     const fields = req.query.fields.split(',').join(' '); // replaces commas w spaces in query fields string
+//     query = query.select(fields); // specify list of fields names we will select. Also query.select is called projecting (limiting fields)
+//     // console.log(fields);
+// } else {
+//     query = query.select('-__v'); // default removes field from response if user specifies no fields: doesn't send the mongoose '__v' internally used field back to client
+// }
+
+// // 4) Pagination
+// // page=2&limit=50 === results 1-10 are on page 1, results 11-20 are on page 2, and so on
+// // skip() is the amount of document skips we do before querying data === skip(10) means skip first 10 docs
+// // limit is exact same as in query string, limits results to 10 or whatever the limit is
+// const page = req.query.page * 1 || 1; // multiply string by 1 to conerce to Number, and sets default value to 1
+// const limit = req.query.limit * 1 || 100; // multiply string by 1 to conerce to Number, and sets default value to 1
+// const skip = (page - 1) * limit; // formula: page 3 limit 10 = skip 20 results = subtract 1 from desired page > page 2, multiply by limit (10) > skip 20 results
+// console.log(page, limit, `skip: ${skip}`);
+
+// query = query.skip(skip).limit(limit); // updates query to only send selected number of tours
+
+// if (req.query.page) {
+//     const numTours = await Tour.countDocuments();
+//     // console.log(`${numTours} tours in db.`);
+//     if (skip >= numTours)
+//         // throwing a new error in a try block makes it immediately move on to catch block
+//         throw new Error(
+//             `There are only ${numTours}, you requested ${skip} tours.`
+//         );
+// }
+////////////////////////////////////////////////////////////////

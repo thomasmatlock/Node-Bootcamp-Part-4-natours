@@ -8,6 +8,10 @@ const router = express.Router(); // creates new router saved to var. then replac
 // right now, the only param is :id, and we can write middleware that runs for that param
 // once again, all middleware has access to the req/res/next function, as well as arg4 which is the value of the param
 // router.param('id', tourController.checkID);
+// MOST-REQUESTED EXAMPLE ROUTER: TOP 5 CHEAP TOURS
+router
+    .route('/top-5-cheap')
+    .get(tourController.aliasTopTours, tourController.getAllTours);
 
 router
     .route('/')
