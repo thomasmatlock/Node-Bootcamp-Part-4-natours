@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const mongoose = require('mongoose');
 const dotenv = require('dotenv'); // npm package that handles our config.env file, useful to toggle between production and development
 
