@@ -1,8 +1,8 @@
 class APIFeatures {
     // constructor is what gets called every time we create a new object out of this class
     constructor(query, queryString) {
-        this.query = query;
-        this.queryString = queryString;
+        this.query = query; // going to need a very clear description of what this si
+        this.queryString = queryString; // going to need a very clear description of what this si
     }
 
     filter() {
