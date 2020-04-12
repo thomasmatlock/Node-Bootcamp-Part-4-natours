@@ -5,9 +5,11 @@ const tourController = require('../controllers/tourController');
 const router = express.Router(); // creates new router saved to var. then replace 'app.route' with 'router.route'
 
 // MOST-REQUESTED EXAMPLE ROUTER: TOP 5 CHEAP TOURS
-router
-    .route('/top-5-cheap')
-    .get(tourController.aliasTopTours, tourController.getAllTours);
+router.route('/top-5-cheap').get(tourController.aliasTopTours, tourController.getAllTours);
+
+router.route('/tour-stats').get(tourController.getTourStats);
+
+router.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
 
 router
     .route('/')

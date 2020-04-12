@@ -110,6 +110,119 @@ exports.deleteTour = async (req, res) => {
         });
     }
 };
+exports.getTourStats = async (req, res) => {
+    try {
+        // https://docs.mongodb.com/manual/
+        // mongoose gives us access to mongodb aggregate method
+        // aggregate method takes an array of stages, each stage is an object, like filter objects before. each stage takes the $ sign operator again
+        // grouping takes fields (call them anything you want). The values are an object containing an operator and the pre-existing field name with $ added
+        // if you wanna group by field, add it: '_id: 'difficulty''
+        // TRICKY: to get count of docs, ie all docs going through aggregator, just '$sum: 1', thats is
+        // For sort method, we must use the field names we specified in $group stage --- use 1 for ascending, -1 for descending
+        // you can repeat stages if you want
+        const stats = await Tour.aggregate([
+            {
+                $match: {
+                    ratingsAverage: { $gte: 4.5 }
+                }
+            },
+            {
+                $group: {
+                    // _id: '$difficulty',
+                    _id: { $toUpper: '$difficulty' },
+                    // _id: '$ratingsAverage',
+                    numTours: { $sum: 1 },
+                    numRatings: { $sum: '$ratingsQuantity' },
+                    avgRating: { $avg: '$ratingsAverage' },
+                    avgPrice: { $avg: '$price' },
+                    minPrice: { $min: '$price' },
+                    maxPrice: { $max: '$price' }
+                }
+            },
+            {
+                $sort: { avgPrice: -1 }
+            }
+            // {
+            //     $match: { _id: { $ne: 'EASY' } }
+            // }
+        ]);
+        res.status(200).json({
+            status: 'success',
+            data: {
+                stats
+            }
+        });
+    } catch (err) {
+        res.status(400).json({
+            status: 'fail',
+            message: err.errmsg
+        });
+    }
+};
+
+exports.getMonthlyPlan = async (req, res) => {
+    try {
+        const year = req.params.year * 1; // year string is coerced into number ---- 2021
+        // $unwind method deconstructs an array field from input documents, and output 1 document for each element of the array
+        // for example, we have 3 timestamps per document, unwind deconstructs them, and outputs 3 documents each containing an element of the array
+        // unwind basically takes whatever field we want and creates an array of all the values in that field
+        // for example, if we have 9 docs, and one field has 3 values in an array, it will output 27 docs, each one containing 1 value from the field
+        // match: we want it greater or equal to Jan 1 2021, and less/equal to than Dec 31 2021
+        // basically this is a 3 stage pipeline:
+        // 1) unwind all the startDates
+        // 2) match all startDates in 2021,
+        // 3) group them by month,
+        // we use $month to extract months out of timestamps (check out mongo db date aggregation operators)
+        // please remember we use stages > then operators on field names
+        const plan = await Tour.aggregate([
+            {
+                $unwind: '$startDates'
+            },
+            {
+                $match: {
+                    startDates: {
+                        $gte: new Date(`${year}-01-01`),
+                        $lte: new Date(`${year}-12-31`)
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: { $month: '$startDates' },
+                    numTourStarts: { $sum: 1 },
+                    tours: { $push: '$name' }
+                }
+            },
+            {
+                $addFields: { month: '$_id' }
+            },
+            {
+                $project: {
+                    _id: 0
+                    // month: 0
+                }
+            },
+            {
+                $sort: { numTourStarts: -1 }
+            }
+            // {
+            //     $limit: 12
+            // }
+        ]);
+
+        res.status(200).json({
+            status: 'success',
+            data: {
+                plan
+            }
+        });
+    } catch (err) {
+        res.status(400).json({
+            status: 'fail',
+            message: err.errmsg
+        });
+    }
+};
 
 ////////////////////////////////////////////////////////////////
 // notice we make all the Atlas functions async/await, and give them try/catch
@@ -262,6 +375,9 @@ exports.deleteTour = async (req, res) => {
 //             `There are only ${numTours}, you requested ${skip} tours.`
 //         );
 // }
+
+////////////////////////////////////////////////////////////////
+// aggregation pipeline basically helps us funnel docs in a collection through whateever we want, whether its a bunch of averages for something etc
 
 // eslint-disable-next-line prettier/prettier
 ////////////////////////////////////////////////////////////////
