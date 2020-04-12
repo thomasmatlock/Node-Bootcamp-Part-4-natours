@@ -120,27 +120,44 @@ exports.getTourStats = async (req, res) => {
         // TRICKY: to get count of docs, ie all docs going through aggregator, just '$sum: 1', thats is
         // For sort method, we must use the field names we specified in $group stage --- use 1 for ascending, -1 for descending
         // you can repeat stages if you want
-        const stats = await Tour.aggregate([
-            {
+        const stats = await Tour.aggregate([{
                 $match: {
-                    ratingsAverage: { $gte: 4.5 }
+                    ratingsAverage: {
+                        $gte: 4.5
+                    }
                 }
             },
             {
                 $group: {
                     // _id: '$difficulty',
-                    _id: { $toUpper: '$difficulty' },
+                    _id: {
+                        $toUpper: '$difficulty'
+                    },
                     // _id: '$ratingsAverage',
-                    numTours: { $sum: 1 },
-                    numRatings: { $sum: '$ratingsQuantity' },
-                    avgRating: { $avg: '$ratingsAverage' },
-                    avgPrice: { $avg: '$price' },
-                    minPrice: { $min: '$price' },
-                    maxPrice: { $max: '$price' }
+                    numTours: {
+                        $sum: 1
+                    },
+                    numRatings: {
+                        $sum: '$ratingsQuantity'
+                    },
+                    avgRating: {
+                        $avg: '$ratingsAverage'
+                    },
+                    avgPrice: {
+                        $avg: '$price'
+                    },
+                    minPrice: {
+                        $min: '$price'
+                    },
+                    maxPrice: {
+                        $max: '$price'
+                    }
                 }
             },
             {
-                $sort: { avgPrice: -1 }
+                $sort: {
+                    avgPrice: -1
+                }
             }
             // {
             //     $match: { _id: { $ne: 'EASY' } }
@@ -174,8 +191,7 @@ exports.getMonthlyPlan = async (req, res) => {
         // 3) group them by month,
         // we use $month to extract months out of timestamps (check out mongo db date aggregation operators)
         // please remember we use stages > then operators on field names
-        const plan = await Tour.aggregate([
-            {
+        const plan = await Tour.aggregate([{
                 $unwind: '$startDates'
             },
             {
@@ -188,13 +204,21 @@ exports.getMonthlyPlan = async (req, res) => {
             },
             {
                 $group: {
-                    _id: { $month: '$startDates' },
-                    numTourStarts: { $sum: 1 },
-                    tours: { $push: '$name' }
+                    _id: {
+                        $month: '$startDates'
+                    },
+                    numTourStarts: {
+                        $sum: 1
+                    },
+                    tours: {
+                        $push: '$name'
+                    }
                 }
             },
             {
-                $addFields: { month: '$_id' }
+                $addFields: {
+                    month: '$_id'
+                }
             },
             {
                 $project: {
@@ -203,7 +227,9 @@ exports.getMonthlyPlan = async (req, res) => {
                 }
             },
             {
-                $sort: { numTourStarts: -1 }
+                $sort: {
+                    numTourStarts: -1
+                }
             }
             // {
             //     $limit: 12
