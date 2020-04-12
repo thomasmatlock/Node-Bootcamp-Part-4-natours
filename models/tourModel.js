@@ -64,7 +64,11 @@ const tourSchema = new mongoose.Schema(
             default: Date.now(),
             select: false // auto-removes this field from ever being sent to client (use for sensitive data)
         },
-        startDates: [Date]
+        startDates: [Date],
+        secretTour: {
+            type: Boolean,
+            default: false
+        }
     },
     {
         toJSON: { virtuals: true },
@@ -90,11 +94,11 @@ tourSchema.virtual('durationWeeks').get(function() {
 // post middleware runs after an event
 // mongoose middleware is defined on the scheme, just like virtual fields
 //4 types of mongoose middleware
-// 1) document 2) query 3) aggregate 4) model
 // document middleware is middleware that can act on the currently processed document
 //arg1 is the function name, in this case save: this is a pre-save function
 // arg2 is the function that will be called before a document is saved to db
 // just like in express we have the next() function
+// 1) DOCUMENT MIDDLEWARE
 // DOCUMENT MIDDLEWARE, runs before .save() and .create(), but not on insertMany
 // hooks are what we call the event, in this case, its a 'save' hook
 tourSchema.pre('save', function(next) {
@@ -113,6 +117,30 @@ tourSchema.post('save', function(doc, next) {
     // console.log(doc);
     next();
 });
+// 2) QUERY MIDDLEWARE
+// Allows us to run middleware pre/post query hook
+// below will run before any find() query is executed
+// all the this keyword will now point to the current query, not the current document like above in pre document middleware
+// below also notice instead of simply the 'find' hook, we want to cover any queries that start with find, so findOne() is also prevented from being queried on secret stuff
+// it actually covers find, findOne, findOneAndUpdate, etc
+tourSchema.pre(/^find/, function(next) {
+    // tourSchema.pre('find', function(next) {
+    this.find({ secretTour: { $ne: true } }); //  here send response of queries found that do not contain secretTour field as true, basically send all public tours back
+    this.startTime = new Date(); // this sets it as current time in milliseconds
+    next();
+});
+
+// post-query runs after the query has been executed
+// docs refers to all the documents returned from the query
+tourSchema.post(/^find/, function(docs, next) {
+    // console.log(docs);
+    console.log(`Query duration took ${Date.now() - this.startTime} milliseconds`);
+
+    next();
+});
+// 3) AGGREGATE MIDDLEWARE
+
+// 4) MODEL MIDDLEWARE
 
 // MONGOOSE MODEL
 // create an instance of the Tour model
