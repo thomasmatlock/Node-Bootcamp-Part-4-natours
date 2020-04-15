@@ -1,3 +1,4 @@
+////////////////////////////////////////////////////////////////
 const mongoose = require('mongoose'); // mongoose is npm package that is a middleware that allows our app to connect to our mongodb database
 const slugify = require('slugify');
 
@@ -9,72 +10,73 @@ const slugify = require('slugify');
 // also, for string types, we can set trim to true, to trim of leading/trailing whitespace characters
 // MONGOOSE SCHEMA
 
-const tourSchema = new mongoose.Schema(
-    {
-        name: {
-            type: String,
-            required: [true, 'A tour must have a name.'],
-            unique: true,
-            trim: true
-        },
-        slug: {
-            type: String
-        },
-        duration: {
-            type: Number,
-            required: [true, 'A tour must have a duration.']
-        },
-        maxGroupSize: {
-            type: Number,
-            required: [true, 'A tour must have a max group size.']
-        },
-        difficulty: {
-            type: String,
-            required: [true, 'A tour must have a difficulty.']
-        },
-        ratingsAverage: {
-            type: Number,
-            default: 4.5
-        },
-        ratingsQuantity: {
-            type: Number,
-            default: 0
-        },
-        price: {
-            type: Number,
-            required: [true, 'A tour must have a price.']
-        },
-        priceDiscount: Number,
-        summary: {
-            type: String,
-            trim: true,
-            required: [true, 'A tour must have a summary.']
-        },
-        description: {
-            type: String,
-            trim: true
-        },
-        imageCover: {
-            type: String,
-            required: [true, 'A tour must have a cover image.']
-        },
-        images: [String],
-        createdAt: {
-            type: Date,
-            default: Date.now(),
-            select: false // auto-removes this field from ever being sent to client (use for sensitive data)
-        },
-        startDates: [Date],
-        secretTour: {
-            type: Boolean,
-            default: false
-        }
+const tourSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: [true, 'A tour must have a name.'],
+        unique: true,
+        trim: true
     },
-    {
-        toJSON: { virtuals: true },
-        toObject: { virtuals: true }
+    slug: {
+        type: String
+    },
+    duration: {
+        type: Number,
+        required: [true, 'A tour must have a duration.']
+    },
+    maxGroupSize: {
+        type: Number,
+        required: [true, 'A tour must have a max group size.']
+    },
+    difficulty: {
+        type: String,
+        required: [true, 'A tour must have a difficulty.']
+    },
+    ratingsAverage: {
+        type: Number,
+        default: 4.5
+    },
+    ratingsQuantity: {
+        type: Number,
+        default: 0
+    },
+    price: {
+        type: Number,
+        required: [true, 'A tour must have a price.']
+    },
+    priceDiscount: Number,
+    summary: {
+        type: String,
+        trim: true,
+        required: [true, 'A tour must have a summary.']
+    },
+    description: {
+        type: String,
+        trim: true
+    },
+    imageCover: {
+        type: String,
+        required: [true, 'A tour must have a cover image.']
+    },
+    images: [String],
+    createdAt: {
+        type: Date,
+        default: Date.now(),
+        select: false // auto-removes this field from ever being sent to client (use for sensitive data)
+    },
+    startDates: [Date],
+    secretTour: {
+        type: Boolean,
+        default: false
     }
-);
+}, {
+    toJSON: {
+        virtuals: true
+    },
+    toObject: {
+        virtuals: true
+    }
+});
 // virtual properties are basically properties we can define our our schema, but that will not be persisted
 // virtual properties make sense with values that can be derived from each other, ie, miles to km. this saves on data back and forth if we can convert it where its at
 // here we use a regular function because we need the this keyword, and arrow functions dont get access to the this keyword
@@ -84,7 +86,7 @@ const tourSchema = new mongoose.Schema(
 // in order for virtual fields to show up in the response object, we have to add it above in the schema options
 // above we make it so whether we output as JSON or obj, it appears
 // one thing to remember, we cant use the virtual field name in queries, ie: 'durationWeeks' cant be used anywhere in our query string
-tourSchema.virtual('durationWeeks').get(function() {
+tourSchema.virtual('durationWeeks').get(function () {
     return this.duration / 7;
 });
 // just like with express middleware, we can use mongoose middleware to have something happen between 2 events
@@ -98,48 +100,57 @@ tourSchema.virtual('durationWeeks').get(function() {
 //arg1 is the function name, in this case save: this is a pre-save function
 // arg2 is the function that will be called before a document is saved to db
 // just like in express we have the next() function
+////////////////////////////////////////////////////////////////
 // 1) DOCUMENT MIDDLEWARE
 // DOCUMENT MIDDLEWARE, runs before .save() and .create(), but not on insertMany
 // hooks are what we call the event, in this case, its a 'save' hook
-tourSchema.pre('save', function(next) {
-    this.slug = slugify(this.name, { lower: true }); // this points to the document being currently processed, options pass in as object
+tourSchema.pre('save', function (next) {
+    this.slug = slugify(this.name, {
+        lower: true
+    }); // this points to the document being currently processed, options pass in as object
     next();
 });
 // multiple pre save middleware, multiple pre/post hooks
-tourSchema.pre('save', function(next) {
+tourSchema.pre('save', function (next) {
     // console.log('Will save document...');
     next();
 });
 // post save middleware has access to next(), but also the doc that was just saved, passed to in in params
 // post middleware execute after all pre middleware functions have completed
 // instead of this keyword, we have the finished document in the doc
-tourSchema.post('save', function(doc, next) {
+tourSchema.post('save', function (doc, next) {
     // console.log(doc);
     next();
 });
+////////////////////////////////////////////////////////////////
 // 2) QUERY MIDDLEWARE
 // Allows us to run middleware pre/post query hook
 // below will run before any find() query is executed
 // all the this keyword will now point to the current query, not the current document like above in pre document middleware
 // below also notice instead of simply the 'find' hook, we want to cover any queries that start with find, so findOne() is also prevented from being queried on secret stuff
 // it actually covers find, findOne, findOneAndUpdate, etc
-tourSchema.pre(/^find/, function(next) {
+tourSchema.pre(/^find/, function (next) {
     // tourSchema.pre('find', function(next) {
-    this.find({ secretTour: { $ne: true } }); //  here send response of queries found that do not contain secretTour field as true, basically send all public tours back
+    this.find({
+        secretTour: {
+            $ne: true
+        }
+    }); //  here send response of queries found that do not contain secretTour field as true, basically send all public tours back
     this.startTime = new Date(); // this sets it as current time in milliseconds
     next();
 });
 
 // post-query runs after the query has been executed
 // docs refers to all the documents returned from the query
-tourSchema.post(/^find/, function(docs, next) {
+tourSchema.post(/^find/, function (docs, next) {
     // console.log(docs);
     console.log(`Query duration took ${Date.now() - this.startTime} milliseconds`);
-
     next();
 });
-// 3) AGGREGATE MIDDLEWARE
-
+////////////////////////////////////////////////////////////////
+// 3) AGGREGATION MIDDLEWARE
+// allows us to add hooks before and after aggregation
+////////////////////////////////////////////////////////////////
 // 4) MODEL MIDDLEWARE
 
 // MONGOOSE MODEL
