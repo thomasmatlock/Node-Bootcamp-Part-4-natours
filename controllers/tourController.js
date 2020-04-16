@@ -123,16 +123,19 @@ exports.getTourStats = async (req, res) => {
         // TRICKY: to get count of docs, ie all docs going through aggregator, just '$sum: 1', thats is
         // For sort method, we must use the field names we specified in $group stage --- use 1 for ascending, -1 for descending
         // you can repeat stages if you want
-        const stats = await Tour.aggregate([
-            {
+        const stats = await Tour.aggregate([{
                 $match: {
-                    ratingsAverage: { $gte: 4.5 }
+                    ratingsAverage: {
+                        $gte: 4.5
+                    }
                 }
             },
             {
                 $group: {
                     // _id: '$difficulty',
-                    _id: { $toUpper: '$difficulty' },
+                    _id: {
+                        $toUpper: '$difficulty'
+                    },
                     // _id: '$ratingsAverage',
                     numTours: {
                         $sum: 1
@@ -191,8 +194,7 @@ exports.getMonthlyPlan = async (req, res) => {
         // 3) group them by month,
         // we use $month to extract months out of timestamps (check out mongo db date aggregation operators)
         // please remember we use stages > then operators on field names
-        const plan = await Tour.aggregate([
-            {
+        const plan = await Tour.aggregate([{
                 $unwind: '$startDates'
             },
             {
@@ -405,6 +407,7 @@ exports.getMonthlyPlan = async (req, res) => {
 
 ////////////////////////////////////////////////////////////////
 // aggregation pipeline basically helps us funnel docs in a collection through whateever we want, whether its a bunch of averages for something etc
-
+////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 // eslint-disable-next-line prettier/prettier
 ////////////////////////////////////////////////////////////////
