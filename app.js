@@ -1,9 +1,11 @@
 const express = require('express');
 const morgan = require('morgan'); // morgan is a middleware that simplifies how req object in console
+const AppError = require('./utils/appError');
+const globalErrorHandler = require('./controllers/errorController');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 
-// MIDDLEWARE
+// MIDDLEWAREs
 const app = express(); // calling express adds a bunch of methods to our variable we save it to
 
 if (process.env.NODE_ENV === 'development') {
@@ -20,6 +22,17 @@ app.use((req, res, next) => {
 // MOUNTED ROUTERS
 app.use('/api/v1/tours', tourRouter); // arg1 = URL endpoint, arg2 = router handling requests sent to arg1 endpoint
 app.use('/api/v1/users', userRouter); // arg1 = URL endpoint, arg2 = router handling requests sent to arg1 endpoint
+
+// Here we use a router to handle all unhandled routes
+// app.all runs for all the verbs/methods, whether its get or post, patch, .all handles all of them
+// if you put this above all the other middlewares, everything would receive this error respoonse, even valid requests
+app.all('*', (req, res, next) => {
+    next(new AppError(`Cant find ${req.originalUrl} on this server`, 404)); // anytime we pass an arg to next(), it assumes it is the error obj, and skip all remaining middleware to pass it to the error handler middleware, which is error first fn below
+});
+
+// we have lots of res.status.json responses going out, one for every req, so we wanna have middleware to handle them once, DRY principle
+// this is an error first function, which means arg1 is the error
+app.use(globalErrorHandler);
 
 module.exports = app; // export to server.js for use
 

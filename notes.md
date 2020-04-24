@@ -1,0 +1,13 @@
+-   section 112
+    -   2 types of errors
+        -   operational, problems that we can predict will happen eventually, so we handle them in advance
+            -   invalid path accessed
+            -   invalid user input (validator error from mongoose)
+            -   failed to connect to server or db
+            -   request timeout, etc
+            -   GOAL, have middleware setup to handle incoming errors, so we can send a good response to client
+        -   programming errors, bugs we devs introduce into our code, more difficult to find and handle
+            -   reading undefined variables
+            -   passing a number where an object is expected
+            -   using await without async
+            -   using req.query instead of req.body, etc

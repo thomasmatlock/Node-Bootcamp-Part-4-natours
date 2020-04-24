@@ -23,6 +23,25 @@ app.listen(port, (req, res) => {
     console.log(`App running on port ${port}`);
 });
 
+// TEST NDB COMMENT
+
+////////////////////////////////////////////////////////////////
+// NDB debugging
+// click left of any line to add a breakpoint. it will stop at that line
+// executes everything ABOVE that line, not the breakpoint line, or below it
+// right click > run this file 
+// controls are on top right, step over/into/out of functions
+// control pane on right side, shows us in Scope we have access to 5 vars in every module: this Obj (__dirname, __filename, etc), require, module, exports
+// app variables is our express application we export from app.js 
+// right panel, go to scope > local variables > app > _router > stack. The "stack" is the middleware stack we have in our application
+// also, go to scope > global variables > process > env --- you can see our global environment variables WOW, LOOK AT ALL THE VARIABLES
+// so basically, at any point in time, you can pause the program, to see exactly what is what, its kind of like advanced console logging
+// Breakpoint in Get All Tours, after processing request, BEFORE sending response back, and right pane > scope > local > you see req, res, this, features, etc, you can examine the req object
+// it really is an amazing tool to use instead of tons of console logs
+// you can looks at the Block > Tours, expand it you can see all the data we already grabbed from MDB, little bit different layout with ellipses you need to expand to see the values
+// also "features" is there, as instance of APIFeatures, just as we defined it, with query, and querystring
+
+
 ////////////////////////////////////////////////////////////////
 // reads our config.env file and save them to nodejs env variable
 // dotenv.config({

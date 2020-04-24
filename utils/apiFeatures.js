@@ -39,6 +39,8 @@ class APIFeatures {
 
     limitFields() {
         if (this.queryString.fields) {
+            console.log(this.queryString.fields);
+
             const fields = this.queryString.fields.split(',').join(' '); // replaces commas w spaces in query fields string
             this.query = this.query.select(fields); // specify list of fields names we will select. Also this.query.select is called projecting (limiting fields)
             // console.log(fields);
