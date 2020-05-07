@@ -42,7 +42,6 @@ module.exports = app; // export to server.js for use
 // the routers then run the controllers attached to them
 // app.js => mounted routers => router file => controller file
 // its good practice to separate express and server.js file
-// test comment
 
 ////////////////////////////////////////////////////////////////
 // we need this, try commenting it out, it changes client req body json to a req object, without it, its undefined
