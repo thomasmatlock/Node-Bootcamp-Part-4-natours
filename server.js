@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv'); // npm package that handles our config.env file, useful to toggle between production and development
 
 dotenv.config({
-    path: './config.env',
+    path: './config.env'
 });
 const app = require('./app');
 
@@ -13,7 +13,7 @@ mongoose
         useNewUrlParser: true,
         useCreateIndex: true,
         useFindAndModify: false,
-        useUnifiedTopology: true,
+        useUnifiedTopology: true
     })
     .then(() => console.log(`DB connection successful!`));
 
@@ -28,6 +28,7 @@ app.listen(port, (req, res) => {
 // 1 more test
 // test from the laptop
 // another test
+// another test 2
 ////////////////////////////////////////////////////////////////
 // NDB debugging
 // click left of any line to add a breakpoint. it will stop at that line
