@@ -6,16 +6,13 @@ const router = express.Router(); // creates new router saved to var. then replac
 
 // MOST-REQUESTED EXAMPLE ROUTER: TOP 5 CHEAP TOURS
 router.route('/top-5-cheap').get(tourController.aliasTopTours, tourController.getAllTours);
-
 router.route('/tour-stats').get(tourController.getTourStats);
-
 router.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
 
 router
     .route('/')
     .get(tourController.getAllTours)
     .post(tourController.createTour); // add param or conditional middleware before default controller
-
 router
     .route('/:id')
     .get(tourController.getTour)

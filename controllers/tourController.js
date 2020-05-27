@@ -8,7 +8,6 @@ exports.aliasTopTours = (req, res, next) => {
     req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
     next();
 };
-
 exports.getAllTours = async (req, res) => {
     try {
         // EXECUTE QUERY > arg1: Tour.find() = query obj, arg2: req.query = queryString (URL)
@@ -102,7 +101,7 @@ exports.updateTour = async (req, res) => {
 };
 exports.deleteTour = async (req, res) => {
     try {
-        await Tour.findByIdAndDelete(req.params.id); // notice here we dont save the result to a variable, because we dont send anything to client
+        await Tour.findByIdAndDelete(req.params.id); // notice here we don't save the result to a variable, because we done send anything to client
         res.status(204).json({
             status: 'success'
         });
@@ -125,6 +124,7 @@ exports.getTourStats = async (req, res) => {
         // For sort method, we must use the field names we specified in $group stage --- use 1 for ascending, -1 for descending
         // you can repeat stages if you want
         const stats = await Tour.aggregate([{
+
                 $match: {
                     ratingsAverage: {
                         $gte: 4.5
@@ -180,7 +180,6 @@ exports.getTourStats = async (req, res) => {
         });
     }
 };
-
 exports.getMonthlyPlan = async (req, res) => {
     try {
         const year = req.params.year * 1; // year string is coerced into number ---- 2021
@@ -273,7 +272,7 @@ exports.getMonthlyPlan = async (req, res) => {
 //     console.log(`Tour id is ${val}`);
 
 //     if (req.params.id * 1 >= tours.length) {
-//         // remember, using return will make sure the next() is never calledz
+//         // remember, using return will make sure the next() is never called
 //         return res.status(404).json({
 //             status: 'fail',
 //             message: 'Invalid ID'
@@ -373,7 +372,7 @@ exports.getMonthlyPlan = async (req, res) => {
 
 //     query = query.sort(sortBy); // saves version sorted by sort field value, in this case, 'price'
 // } else {
-//     query = query.sort('-createdAt'); // specifies default sort if user doesnt sort them
+//     query = query.sort('-createdAt'); // specifies default sort if user doesn't sort them
 // }
 
 // // 3) Field limiting
@@ -389,8 +388,8 @@ exports.getMonthlyPlan = async (req, res) => {
 // // page=2&limit=50 === results 1-10 are on page 1, results 11-20 are on page 2, and so on
 // // skip() is the amount of document skips we do before querying data === skip(10) means skip first 10 docs
 // // limit is exact same as in query string, limits results to 10 or whatever the limit is
-// const page = req.query.page * 1 || 1; // multiply string by 1 to conerce to Number, and sets default value to 1
-// const limit = req.query.limit * 1 || 100; // multiply string by 1 to conerce to Number, and sets default value to 1
+// const page = req.query.page * 1 || 1; // multiply string by 1 to coerce to Number, and sets default value to 1
+// const limit = req.query.limit * 1 || 100; // multiply string by 1 to coerce to Number, and sets default value to 1
 // const skip = (page - 1) * limit; // formula: page 3 limit 10 = skip 20 results = subtract 1 from desired page > page 2, multiply by limit (10) > skip 20 results
 // console.log(page, limit, `skip: ${skip}`);
 
@@ -407,7 +406,7 @@ exports.getMonthlyPlan = async (req, res) => {
 // }
 
 ////////////////////////////////////////////////////////////////
-// aggregation pipeline basically helps us funnel docs in a collection through whateever we want, whether its a bunch of averages for something etc
+// aggregation pipeline basically helps us funnel docs in a collection through whatever we want, whether its a bunch of averages for something etc
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
 // eslint-disable-next-line prettier/prettier
