@@ -4,115 +4,119 @@ const slugify = require('slugify'); // converts strings into URL slugs
 const validator = require('validator'); // sanitizes user input, checks for, alpha, alphanumeric...to use, just use validate: validator.method()
 
 // MONGOOSE SCHEMA
-const tourSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: [true, 'A tour must have a name.'],
-        unique: true,
-        trim: true,
-        maxlength: [40, 'A tour name must be less or equal to 40 characters.'],
-        minlength: [10, 'A tour name must be more or equal to 10 characters.']
-        // validate: [
-        //     validator.isAlpha,
-        //     'A tour name must use only alphabet characters.'
-        // ] // dont call it, the method will be called when input is sent
-    },
-    slug: {
-        type: String
-    },
-    duration: {
-        type: Number,
-        required: [true, 'A tour must have a duration.']
-    },
-    maxGroupSize: {
-        type: Number,
-        required: [true, 'A tour must have a max group size.']
-    },
-    difficulty: {
-        type: String,
-        required: [true, 'A tour must have a difficulty.'],
-        enum: {
-            values: ['easy', 'medium', 'difficult'],
-            message: 'Difficulty is either: easy, medium, difficult'
+const tourSchema = new mongoose.Schema(
+    {
+        name: {
+            type: String,
+            required: [true, 'A tour must have a name.'],
+            unique: true,
+            trim: true,
+            maxlength: [40, 'A tour name must be less or equal to 40 characters.'],
+            minlength: [10, 'A tour name must be more or equal to 10 characters.']
+            // validate: [
+            //     validator.isAlpha,
+            //     'A tour name must use only alphabet characters.'
+            // ] // dont call it, the method will be called when input is sent
+        },
+
+        slug: {
+            type: String
+        },
+        duration: {
+            type: Number,
+            required: [true, 'A tour must have a duration.']
+        },
+        maxGroupSize: {
+            type: Number,
+            required: [true, 'A tour must have a max group size.']
+        },
+        difficulty: {
+            type: String,
+            required: [true, 'A tour must have a difficulty.'],
+            enum: {
+                values: ['easy', 'medium', 'difficult'],
+                message: 'Difficulty is either: easy, medium, difficult'
+            }
+        },
+        ratingsAverage: {
+            type: Number,
+            default: 4.5,
+            min: [1, 'A tour must a rating of at least 1'],
+            max: [5, 'A tour must not have a rating of more than 5']
+        },
+        ratingsQuantity: {
+            type: Number,
+            default: 0
+        },
+        price: {
+            type: Number,
+            required: [true, 'A tour must have a price.']
+        },
+        priceDiscount: {
+            type: Number,
+            validate: {
+                validator: function(value) {
+                    return value < this.price; // discount = 100 < price = 200 // this keyword only points to current doc on NEW document creation, not patching existing ones
+                },
+                message: 'A price discount ({VALUE}) must be less than the price'
+            }
+        },
+        summary: {
+            type: String,
+            trim: true,
+            required: [true, 'A tour must have a summary.']
+        },
+        description: {
+            type: String,
+            trim: true
+        },
+        imageCover: {
+            type: String,
+            required: [true, 'A tour must have a cover image.']
+        },
+        images: [String],
+        createdAt: {
+            type: Date,
+            default: Date.now(),
+            select: false // auto-removes this field from ever being sent to client (use for sensitive data)
+        },
+        startDates: [Date],
+        secretTour: {
+            type: Boolean,
+            default: false
         }
     },
-    ratingsAverage: {
-        type: Number,
-        default: 4.5,
-        min: [1, 'A tour must a rating of at least 1'],
-        max: [5, 'A tour must not have a rating of more than 5']
-    },
-    ratingsQuantity: {
-        type: Number,
-        default: 0
-    },
-    price: {
-        type: Number,
-        required: [true, 'A tour must have a price.']
-    },
-    priceDiscount: {
-        type: Number,
-        validate: {
-            validator: function (value) {
-                return value < this.price; // discount = 100 < price = 200 // this keyword only points to current doc on NEW document creation, not patching existing ones
-            },
-            message: 'A price discount ({VALUE}) must be less than the price'
+    {
+        toJSON: {
+            virtuals: true
+        },
+        toObject: {
+            virtuals: true
         }
-    },
-    summary: {
-        type: String,
-        trim: true,
-        required: [true, 'A tour must have a summary.']
-    },
-    description: {
-        type: String,
-        trim: true
-    },
-    imageCover: {
-        type: String,
-        required: [true, 'A tour must have a cover image.']
-    },
-    images: [String],
-    createdAt: {
-        type: Date,
-        default: Date.now(),
-        select: false // auto-removes this field from ever being sent to client (use for sensitive data)
-    },
-    startDates: [Date],
-    secretTour: {
-        type: Boolean,
-        default: false
     }
-}, {
-    toJSON: {
-        virtuals: true
-    },
-    toObject: {
-        virtuals: true
-    }
-});
-tourSchema.virtual('durationWeeks').get(function () {
+);
+tourSchema.virtual('durationWeeks').get(function() {
     return this.duration / 7; // returns duration / 7 without ever saving it to db // virtuals good for easily derived values from schema values
 });
 
 // 1) DOCUMENT MIDDLEWARE
-tourSchema.pre('save', function (next) {
+tourSchema.pre('save', function(next) {
     this.slug = slugify(this.name, {
         lower: true
     });
     next();
 });
-tourSchema.pre('save', function (next) {
+tourSchema.pre('save', function(next) {
     // console.log('Will save document...');
     next();
 });
-tourSchema.post('save', function (doc, next) {
+tourSchema.post('save', function(doc, next) {
     // console.log(doc);
     next();
 });
 
 // 2) QUERY MIDDLEWARE
-tourSchema.pre(/^find/, function (next) {
+tourSchema.pre(/^find/, function(next) {
     this.find({
         secretTour: {
             $ne: true
@@ -122,13 +126,13 @@ tourSchema.pre(/^find/, function (next) {
     this.startTime = new Date(); // this sets it as current time in milliseconds
     next();
 });
-tourSchema.post(/^find/, function (docs, next) {
+tourSchema.post(/^find/, function(docs, next) {
     console.log(`Query duration took ${Date.now() - this.startTime} milliseconds`);
     next();
 });
 
 // 3) AGGREGATION MIDDLEWARE
-tourSchema.pre('aggregate', function (next) {
+tourSchema.pre('aggregate', function(next) {
     // the aggregate pipeline is simply the array we passed into the function before: $match, $group, $sort
     this.pipeline().unshift({
         $match: {
