@@ -18,6 +18,7 @@ const tourSchema = new mongoose.Schema(
             //     'A tour name must use only alphabet characters.'
             // ] // dont call it, the method will be called when input is sent
         },
+
         slug: {
             type: String
         },
@@ -94,7 +95,6 @@ const tourSchema = new mongoose.Schema(
         }
     }
 );
-
 tourSchema.virtual('durationWeeks').get(function() {
     return this.duration / 7; // returns duration / 7 without ever saving it to db // virtuals good for easily derived values from schema values
 });
@@ -110,7 +110,6 @@ tourSchema.pre('save', function(next) {
     // console.log('Will save document...');
     next();
 });
-
 tourSchema.post('save', function(doc, next) {
     // console.log(doc);
     next();
@@ -127,7 +126,6 @@ tourSchema.pre(/^find/, function(next) {
     this.startTime = new Date(); // this sets it as current time in milliseconds
     next();
 });
-
 tourSchema.post(/^find/, function(docs, next) {
     console.log(`Query duration took ${Date.now() - this.startTime} milliseconds`);
     next();
