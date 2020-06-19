@@ -1,14 +1,6 @@
 const Tour = require('../models/tourModel');
 const APIFeatures = require('../utils/apiFeatures');
 
-// async functions catch errors using a try/catch block
-// problem is, its messy, we have tons of duplicate code, every handler has a try catch block, and very similar inner code
-// all this duplicate code isnt ideal, lets try fixing it 
-// solution is take try catch block 
-// need to make a function and wrap the try catch block function into it, DRY principle
-const catchAsync = fn => {
-    fn(req, res, next)
-}
 exports.aliasTopTours = (req, res, next) => {
     // limit=5&sort=-ratingsAverage,price
     req.query.limit = '5';
@@ -17,7 +9,7 @@ exports.aliasTopTours = (req, res, next) => {
     next();
 };
 
-exports.getAllTours = async (req, res, next) => {
+exports.getAllTours = async (req, res) => {
     try {
         // EXECUTE QUERY > arg1: Tour.find() = query obj, arg2: req.query = queryString (URL)
         const features = new APIFeatures(Tour.find(), req.query)
@@ -44,7 +36,7 @@ exports.getAllTours = async (req, res, next) => {
         });
     }
 };
-exports.getTour = async (req, res, next) => {
+exports.getTour = async (req, res) => {
     try {
         // all url variables are stored here in params object
         //mongoose skips mongo's "findOne" to find 1 doc, instead it uses findById, its same as === Tour.findOne({id: req.params.id})
@@ -62,7 +54,7 @@ exports.getTour = async (req, res, next) => {
         });
     }
 };
-exports.createTour = catchAsync(async (req, res, next) => {
+exports.createTour = async (req, res) => {
     // old way to create tour document: create document, then call the method
     // const newTour = new Tour({});
     // newTour.save();
@@ -85,8 +77,8 @@ exports.createTour = catchAsync(async (req, res, next) => {
             message: err
         });
     }
-});
-exports.updateTour = async (req, res, next) => {
+};
+exports.updateTour = async (req, res) => {
     try {
         // findByIdAndUpdate: arg1 = id, arg2 = req.body, arg3 = options
         const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
@@ -108,7 +100,7 @@ exports.updateTour = async (req, res, next) => {
         });
     }
 };
-exports.deleteTour = async (req, res, next) => {
+exports.deleteTour = async (req, res) => {
     try {
         await Tour.findByIdAndDelete(req.params.id); // notice here we dont save the result to a variable, because we dont send anything to client
         res.status(204).json({
